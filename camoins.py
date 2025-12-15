@@ -1,13 +1,23 @@
+# This script can unlike all instagram Activity
 import asyncio
-import re
 from camoufox.async_api import AsyncCamoufox
 from browserforge.fingerprints import Screen
+from screeninfo import get_monitors
 
 async def login_instagram(username, password):
     async with AsyncCamoufox(humanize=2.0) as browser:
         try:
+            # Get actual screen resolution
+            monitor = get_monitors()[0]
+            screen_width = monitor.width
+            screen_height = monitor.height
+            print(f"Detected screen resolution: {screen_width}x{screen_height}")
+            
             # Launch browser and create page
             page = await browser.new_page()
+            
+            # Set viewport to match actual screen size
+            await page.set_viewport_size({"width": screen_width, "height": screen_height})
             
             # Navigate to Instagram
             await page.goto("https://www.instagram.com")
@@ -141,8 +151,8 @@ async def login_instagram(username, password):
 
 async def main():
     # Replace these with your Instagram credentials
-    USERNAME = "example_instagram_username"
-    PASSWORD = "example_instagram_password"
+    USERNAME = "dngfirm"
+    PASSWORD = "dancogige26"
     
     await login_instagram(USERNAME, PASSWORD)
 

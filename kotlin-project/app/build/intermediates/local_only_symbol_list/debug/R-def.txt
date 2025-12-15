@@ -1,0 +1,16 @@
+R_DEF: Internal format may change without notice
+local
+id etBody
+id etTitle
+id etUserId
+id fabAdd
+id progressBar
+id recyclerView
+id swipeRefreshLayout
+id tvBody
+id tvTitle
+layout activity_main
+layout dialog_add_post
+layout item_post
+xml backup_rules
+xml data_extraction_rules

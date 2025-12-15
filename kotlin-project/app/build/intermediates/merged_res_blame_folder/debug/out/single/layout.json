@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "com.danang.retrofit_assignment.app-mergeDebugResources-30:/layout/activity_main.xml",
+        "source": "com.danang.retrofit_assignment.app-main-33:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.danang.retrofit_assignment.app-mergeDebugResources-30:/layout/dialog_add_post.xml",
+        "source": "com.danang.retrofit_assignment.app-main-33:/layout/dialog_add_post.xml"
+    },
+    {
+        "merged": "com.danang.retrofit_assignment.app-mergeDebugResources-30:/layout/item_post.xml",
+        "source": "com.danang.retrofit_assignment.app-main-33:/layout/item_post.xml"
+    }
+]

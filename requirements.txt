@@ -59,3 +59,7 @@ websocket-client==1.8.0
 zope.event==5.0
 zope.interface==7.2
 zstandard==0.23.0
+python-telegram-bot==20.7
+python-nmap==0.7.1
+streamget
+screeninfo==0.8.1

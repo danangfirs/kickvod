@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "C:\\Users\\danan\\.gradle\\daemon\\9.0-milestone-1\\com.danang.retrofit_assignment.app-mergeDebugResources-32:\\layout\\item_post.xml",
+        "source": "C:\\Users\\danan\\.gradle\\daemon\\9.0-milestone-1\\com.danang.retrofit_assignment.app-main-35:\\layout\\item_post.xml"
+    },
+    {
+        "merged": "C:\\Users\\danan\\.gradle\\daemon\\9.0-milestone-1\\com.danang.retrofit_assignment.app-mergeDebugResources-32:\\layout\\dialog_add_post.xml",
+        "source": "C:\\Users\\danan\\.gradle\\daemon\\9.0-milestone-1\\com.danang.retrofit_assignment.app-main-35:\\layout\\dialog_add_post.xml"
+    },
+    {
+        "merged": "C:\\Users\\danan\\.gradle\\daemon\\9.0-milestone-1\\com.danang.retrofit_assignment.app-mergeDebugResources-32:\\layout\\activity_main.xml",
+        "source": "C:\\Users\\danan\\.gradle\\daemon\\9.0-milestone-1\\com.danang.retrofit_assignment.app-main-35:\\layout\\activity_main.xml"
+    },
+    {
+        "merged": "com.danang.retrofit_assignment.app-mergeDebugResources-32:/layout/activity_main.xml",
+        "source": "com.danang.retrofit_assignment.app-main-35:/layout/activity_main.xml"
+    }
+]

@@ -1,5 +1,8 @@
 {
     "python.analysis.extraPaths": [
         "./awswaf/python"
+    ],
+    "cursorpyright.analysis.extraPaths": [
+        "./awswaf/python"
     ]
 }

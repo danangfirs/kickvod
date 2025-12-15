@@ -1,6 +1,10 @@
+# Aws Waf Solver For injecting Bot
 import time
 import sys
 import os
+import certifi
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 # Add the awswaf/python directory to the Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'awswaf', 'python'))
@@ -36,7 +40,8 @@ def solve():
         "https://www.binance.com/",
         "https://www.hiltongarage.co.uk/",
         "https://www.cloudflare.com/",
-        "https://www.akamai.com/"
+        "https://www.akamai.com/",
+        "https://en.fofa.info/result?qbase64=ImN3cHNydiI%3D"
     ]
     
     for url in test_urls:
@@ -44,6 +49,7 @@ def solve():
         
         try:
             response = session.get(url, timeout=10)
+            print("[*] Headers:", dict(response.headers))
             print(f"[*] Status code: {response.status_code}")
             print(f"[*] Response length: {len(response.text)} characters")
             

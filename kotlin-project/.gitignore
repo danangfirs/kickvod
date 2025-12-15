@@ -1,0 +1,26 @@
+# Folders and files created by Android Studio and Gradle
+.gradle/
+build/
+capture/
+.idea/
+*.iml
+local.properties
+
+# Android Studio profiling files
+*.hprof
+
+# Keystore files
+*.jks
+*.keystore
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+
+# Mac-specific files
+.DS_Store
+
+# Windows-specific files
+Thumbs.db
