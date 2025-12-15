@@ -13,52 +13,223 @@ Aplikasi ini dibuat untuk memenuhi tujuan pembelajaran berikut:
 
 ---
 
-## B. Penjelasan Alur Kerja Aplikasi
+## B. Penjelasan Alur Kerja dan Implementasi Kode
 
 Aplikasi ini adalah sebuah klien REST API sederhana yang berinteraksi dengan API publik **JSONPlaceholder** (`https://jsonplaceholder.typicode.com/`).
 
 *Catatan: Teks konten (judul dan isi post) yang ditampilkan dalam aplikasi adalah teks placeholder "Lorem Ipsum" yang disediakan langsung oleh API. Teks ini bukan merupakan bagian dari aplikasi dan hanya berfungsi sebagai data contoh.*
 
-### 1. Arsitektur dan Komponen Kunci
+### 1. Konfigurasi Retrofit & Koneksi API (Bobot 20%)
 
-- **`RetrofitClient.kt`**: Objek tunggal (*singleton*) yang mengonfigurasi dan membuat instance Retrofit. Ini adalah pusat dari semua permintaan API, dengan Base URL dan Gson Converter yang sudah diatur.
-- **`ApiService.kt`**: *Interface* yang mendefinisikan *endpoint* API. Terdapat dua metode: `getPosts()` untuk `GET /posts` dan `createPost()` untuk `POST /posts`.
-- **`Post.kt`**: Sebuah `data class` Kotlin yang merepresentasikan struktur data dari sebuah *post*, termasuk `userId`, `id`, `title`, dan `body`. Ini digunakan oleh Gson untuk mem-parsing JSON.
-- **`MainActivity.kt`**: *Activity* utama yang mengatur UI, menginisialisasi RecyclerView, dan menangani logika untuk mengambil (*fetch*) dan mengirim (*create*) data.
-- **`PostAdapter.kt`**: *Adapter* untuk `RecyclerView` yang bertanggung jawab untuk mengambil daftar `Post` dan menampilkannya sebagai item-item di UI.
-- **Layouts**:
-  - `activity_main.xml`: Tampilan utama yang berisi `RecyclerView` untuk menampilkan daftar post dan `FloatingActionButton` untuk menambah post baru.
-  - `item_post.xml`: Layout untuk satu item dalam RecyclerView, yang menampilkan *title* dan *body* dari sebuah post.
-  - `dialog_add_post.xml`: Layout untuk form input yang muncul dalam sebuah `AlertDialog` saat pengguna ingin menambah post baru.
+Konfigurasi awal meliputi izin internet, pembuatan klien Retrofit, dan pendefinisian endpoint API.
 
-### 2. Alur Pengambilan Data (GET Request)
+**Izin Internet (`AndroidManifest.xml`)**
 
-1.  **Inisialisasi**: Saat `MainActivity` pertama kali dibuat (`onCreate`), fungsi `fetchPosts()` langsung dipanggil.
-2.  **Permintaan API**: `fetchPosts()` menggunakan `RetrofitClient.instance` untuk memanggil metode `getPosts()`. Permintaan ini dijalankan secara *asynchronous* menggunakan `enqueue()`.
-3.  **Menampilkan Indikator Loading**: Selama permintaan berjalan, sebuah `ProgressBar` akan ditampilkan untuk memberi tahu pengguna bahwa data sedang dimuat.
-4.  **Menangani Respons**:
-    - **Jika Berhasil (`onResponse`)**: Data `List<Post>` yang diterima dari server akan diteruskan ke `PostAdapter` melalui metode `updateData()`. Adapter kemudian memperbarui `RecyclerView` untuk menampilkan daftar post.
-    - **Jika Gagal (`onFailure`)**: Jika terjadi masalah koneksi (misalnya, tidak ada internet), sebuah pesan `Toast` akan ditampilkan untuk memberi tahu pengguna tentang masalah jaringan.
+Pertama, aplikasi memerlukan izin untuk mengakses internet. Ini ditambahkan di dalam file `AndroidManifest.xml`.
 
-### 3. Alur Pengiriman Data (POST Request)
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
 
-1.  **Input Pengguna**: Pengguna menekan `FloatingActionButton` (+) di `MainActivity`.
-2.  **Menampilkan Form**: Sebuah `AlertDialog` yang berisi form input (`dialog_add_post.xml`) ditampilkan. Pengguna diminta untuk mengisi *User ID*, *Title*, dan *Body*.
-3.  **Validasi Input**: Setelah pengguna menekan tombol "Post", aplikasi akan memvalidasi input. Jika ada kolom yang kosong atau User ID tidak valid, sebuah pesan `Toast` akan muncul dan proses pengiriman dibatalkan.
-4.  **Permintaan API**: Jika input valid, sebuah objek `Post` baru akan dibuat dan dikirim ke server melalui metode `createPost()` dari `ApiService`. Permintaan ini juga berjalan secara *asynchronous*.
-5.  **Menangani Respons**:
-    - **Jika Berhasil (`onResponse`)**: Sebuah `Toast` akan ditampilkan untuk mengonfirmasi bahwa post berhasil dibuat. Setelah itu, aplikasi akan otomatis memanggil `fetchPosts()` lagi untuk menyegarkan daftar data di `RecyclerView`.
-    - **Jika Gagal (`onFailure` atau `response.isSuccessful` bernilai `false`)**: Pesan galat akan ditampilkan melalui `Toast` untuk menginformasikan pengguna bahwa post gagal dibuat.
+**Klien Retrofit (`RetrofitClient.kt`)**
 
-### 4. Penanganan Galat (Error Handling)
+Sebuah *object singleton* dibuat untuk memastikan hanya ada satu instance Retrofit yang digunakan di seluruh aplikasi. Di sini, `baseUrl` dan `GsonConverterFactory` dikonfigurasi.
 
-Aplikasi ini menerapkan beberapa mekanisme penanganan galat untuk menjaga stabilitas:
+```kotlin
+package com.danang.retrofit_assignment
 
-- **Koneksi Gagal**: *Callback* `onFailure` dari Retrofit akan menangkap galat jaringan dan menampilkan pesan kepada pengguna.
-- **Input Tidak Valid**: Validasi sederhana memastikan semua kolom form diisi sebelum mengirim data.
-- **Respons Server Gagal**: Aplikasi memeriksa `response.isSuccessful`. Jika server mengembalikan kode galat (misal, 404 atau 500), pesan yang sesuai akan ditampilkan.
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
-Dengan alur kerja ini, aplikasi dapat berfungsi secara stabil dan memberikan umpan balik yang jelas kepada pengguna dalam berbagai skenario.
+object RetrofitClient {
+    private const val BASE_URL = "https://jsonplaceholder.typicode.com/"
+
+    val instance: ApiService by lazy {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        retrofit.create(ApiService::class.java)
+    }
+}
+```
+
+**Interface API (`ApiService.kt`)**
+
+Interface ini mendefinisikan metode-metode untuk setiap endpoint API yang akan digunakan. Anotasi Retrofit seperti `@GET` dan `@POST` digunakan untuk menentukan jenis request dan path-nya.
+
+```kotlin
+package com.danang.retrofit_assignment
+
+import retrofit2.Call
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.POST
+
+interface ApiService {
+    @GET("posts")
+    fun getPosts(): Call<List<Post>>
+
+    @POST("posts")
+    fun createPost(@Body post: Post): Call<Post>
+}
+```
+
+**Model Data (`Post.kt`)**
+
+Sebuah `data class` digunakan untuk memodelkan struktur JSON yang diterima dari atau dikirim ke API.
+
+```kotlin
+package com.danang.retrofit_assignment
+
+import com.google.gson.annotations.SerializedName
+
+data class Post(
+    @SerializedName("userId") val userId: Int,
+    @SerializedName("id") val id: Int? = null,
+    @SerializedName("title") val title: String,
+    @SerializedName("body") val body: String
+)
+```
+
+### 2. Implementasi GET Request & RecyclerView (Bobot 25%)
+
+Data yang diambil dari server ditampilkan dalam sebuah `RecyclerView`.
+
+**Adapter RecyclerView (`PostAdapter.kt`)**
+
+Adapter ini bertanggung jawab untuk menghubungkan data `List<Post>` dengan `RecyclerView`. Ia memiliki fungsi untuk memperbarui seluruh daftar (`updateData`) dan menambahkan satu item baru (`addPost`).
+
+```kotlin
+package com.danang.retrofit_assignment
+
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+
+class PostAdapter(initialPosts: List<Post>) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
+
+    private val posts: MutableList<Post> = initialPosts.toMutableList()
+
+    // ... (ViewHolder, onCreateViewHolder, onBindViewHolder, getItemCount)
+
+    fun updateData(newPosts: List<Post>) {
+        posts.clear()
+        posts.addAll(newPosts)
+        notifyDataSetChanged()
+    }
+
+    fun addPost(post: Post) {
+        posts.add(0, post) // Menambahkan post baru di posisi paling atas
+        notifyItemInserted(0) // Animasi penambahan item yang lebih efisien
+    }
+}
+```
+
+**Logika Pengambilan Data (`MainActivity.kt`)**
+
+Fungsi `fetchPosts` di `MainActivity` menangani pemanggilan API GET, menampilkan ProgressBar saat loading, dan memperbarui adapter saat data diterima.
+
+```kotlin
+private fun fetchPosts() {
+    binding.progressBar.visibility = android.view.View.VISIBLE
+    RetrofitClient.instance.getPosts().enqueue(object : Callback<List<Post>> {
+        override fun onResponse(call: Call<List<Post>>, response: Response<List<Post>>) {
+            binding.progressBar.visibility = android.view.View.GONE
+            binding.swipeRefreshLayout.isRefreshing = false
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    adapter.updateData(it)
+                }
+            } else {
+                showError("Failed to load posts: ${response.code()}")
+            }
+        }
+
+        override fun onFailure(call: Call<List<Post>>, t: Throwable) {
+            binding.progressBar.visibility = android.view.View.GONE
+            binding.swipeRefreshLayout.isRefreshing = false
+            showError("Network error: ${t.message}")
+        }
+    })
+}
+```
+
+### 3. Implementasi POST Request & Form Input (Bobot 25%)
+
+Aplikasi menyediakan `AlertDialog` sebagai form untuk mengirim data baru.
+
+**Menampilkan Form Input (`MainActivity.kt`)**
+
+Fungsi `showAddPostDialog` membuat dan menampilkan dialog, serta menangani validasi input dasar saat tombol "Post" ditekan.
+
+```kotlin
+private fun showAddPostDialog() {
+    // ... (inflate dialog view)
+
+    AlertDialog.Builder(this)
+        .setView(dialogView)
+        .setPositiveButton("Post") { _, _ ->
+            val userIdStr = etUserId.text.toString()
+            val title = etTitle.text.toString()
+            val body = etBody.text.toString()
+
+            if (userIdStr.isNotEmpty() && title.isNotEmpty() && body.isNotEmpty()) {
+                val userId = userIdStr.toIntOrNull()
+                if (userId != null) {
+                    createPost(Post(userId = userId, title = title, body = body))
+                } else {
+                    showError("Invalid User ID")
+                }
+            } else {
+                showError("Please fill all fields")
+            }
+        }
+        .setNegativeButton("Cancel", null)
+        .show()
+}
+```
+
+**Logika Pengiriman Data (`MainActivity.kt`)**
+
+Fungsi `createPost` mengirim data ke server. Setelah berhasil (kode `201 Created`), aplikasi menambahkan post baru secara manual ke adapter untuk memperbarui UI secara langsung tanpa mengambil ulang seluruh data.
+
+```kotlin
+private fun createPost(post: Post) {
+    binding.progressBar.visibility = android.view.View.VISIBLE
+    RetrofitClient.instance.createPost(post).enqueue(object : Callback<Post> {
+        override fun onResponse(call: Call<Post>, response: Response<Post>) {
+            binding.progressBar.visibility = android.view.View.GONE
+            if (response.isSuccessful) {
+                Toast.makeText(this@MainActivity, "Post Created! Status: ${response.code()}", Toast.LENGTH_LONG).show()
+                // Menambahkan post baru ke adapter secara langsung
+                response.body()?.let {
+                    adapter.addPost(it)
+                    binding.recyclerView.scrollToPosition(0) // Scroll ke atas
+                }
+            } else {
+                showError("Failed to create post: ${response.code()}")
+            }
+        }
+
+        override fun onFailure(call: Call<Post>, t: Throwable) {
+            binding.progressBar.visibility = android.view.View.GONE
+            showError("Network error: ${t.message}")
+        }
+    })
+}
+```
+
+### 4. Error Handling & Stabilitas Aplikasi (Bobot 15%)
+
+Penanganan galat diimplementasikan di beberapa titik, seperti yang terlihat pada potongan kode di atas:
+- **`onFailure`**: Blok ini menangani masalah koneksi atau masalah lain yang mencegah request mencapai server.
+- **`else` di dalam `onResponse`**: Blok ini menangani kasus di mana server memberikan respons, tetapi dengan kode status yang menunjukkan kegagalan (misal, 404, 500).
+- **Validasi Input**: Pengecekan sederhana di `showAddPostDialog` mencegah pengiriman data yang tidak lengkap.
+
+Semua pesan galat ditampilkan kepada pengguna melalui fungsi `showError` yang menampilkan `Toast`.
 
 ---
 
@@ -66,4 +237,4 @@ Dengan alur kerja ini, aplikasi dapat berfungsi secara stabil dan memberikan ump
 
 Berikut adalah tangkapan layar dari aplikasi saat berjalan.
 
-![Tampilan Utama Aplikasi](https://storage.googleapis.com/aiex-shared-images/51e3381a-4712-4ebc-9e2c-b5f778688755.png)
+![Tampilan Utama Aplikasi](./image/1.jpeg)
