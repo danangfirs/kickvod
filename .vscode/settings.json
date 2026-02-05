@@ -4,5 +4,6 @@
     ],
     "cursorpyright.analysis.extraPaths": [
         "./awswaf/python"
-    ]
+    ],
+    "git.ignoreLimitWarning": true
 }
